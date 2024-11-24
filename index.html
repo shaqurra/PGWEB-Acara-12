@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <link rel="stylesheet" href="plugin/leaflet-search-master/leaflet-search-master/dist/leaflet-search.min.css">
+  <link rel="stylesheet" href="plugin/Leaflet.defaultextent-master/Leaflet.defaultextent-master/dist/leaflet.defaultextent.css" />
+  <title>Web-GIS with Geoserver and Leaflet</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    #map {
+      width: 100%;
+      height: calc(100vh - 130px);
+      margin-top: 130px;
+    }
+
+    .navbar {
+      position: fixed;
+      top: 80px;
+      width: 100%;
+      z-index: 1100;
+      background: white !important;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .title {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(128, 0, 128, 0.8);
+      padding: 15px 0;
+      text-align: center;
+      font-size: 36px;
+      font-weight: bold;
+      color: white;
+      z-index: 1150;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .legend {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      background: white;
+      padding: 12px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      max-height: 300px;
+      overflow-y: auto;
+      width: 200px;
+      z-index: 1000;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .legend h4 {
+      font-size: 1.1rem;
+      margin-bottom: 12px;
+      font-weight: bold;
+    }
+
+    .legend h5 {
+      font-size: 1rem;
+      margin-top: 12px;
+      margin-bottom: 8px;
+    }
+
+    /* Resize Legend Image for Jalan */
+    .legend img {
+      width: 150px; /* Set a fixed width for both images */
+      margin-bottom: 8px;
+      border: 1px solid #eee;
+    }
+
+    /* Target only Jalan image */
+    #legendImageJalan {
+      width: 30px; /* Smaller width for Jalan legend */
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Title above navbar -->
+  <div class="title">Peta Interaktif di Kabupaten Pati</div>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg bg-body-tertiary">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#"><i class="fa-solid fa-map-location-dot"></i> Kabupaten Pati </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <a class="nav-link" href="https://geoportal.patikab.go.id/" target="_blank">
+              <i class="fa-solid fa-layer-group"></i> Sumber Data
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#infoModal">
+              <i class="fa-solid fa-circle-info"></i> Info
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Peta -->
+  <div id="map"></div>
+
+  <div class="legend" id="legend">
+    <h4>Legenda</h4>
+    <img id="legendImageAdmin" alt="Legenda Batas Administrasi Desa" />
+    <h5>Legenda Jalan</h5>
+    <img id="legendImageJalan" alt="Legenda Jalan Layer" />
+  </div>
+
+  <!-- Modal Info -->
+  <div class="modal fade" id="infoModal" tabindex="-1" aria-labelledby="infoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="infoModalLabel">Info Pembuat</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <table class="table table-striped table-bordered">
+            <tr>
+              <th>Nama</th>
+              <td>Shaqurra</td>
+            </tr>
+            <tr>
+              <th>NIM</th>
+              <td>23/520668/SV/23277</td>
+            </tr>
+            <tr>
+              <th>Kelas</th>
+              <td>B</td>
+            </tr>
+            <tr>
+              <th>Github</th>
+              <td><a href="https://github.com/shaqurra" target="_blank">https://github.com/shaqurra</a></td>
+            </tr>
+          </table>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <script src="plugin/leaflet-search-master/leaflet-search-master/dist/leaflet-search.min.js"></script>
+  <script src="plugin/Leaflet.defaultextent-master/Leaflet.defaultextent-master/dist/leaflet.defaultextent.js"></script>
+  <script>
+    // Inisialisasi peta
+    var map = L.map("map").setView([-6.7, 110.9], 10);
+
+    // Tambahkan basemap OpenStreetMap
+    var osm = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(map);
+
+    // Tambahkan layer WMS dari Geoserver (Batas Administrasi Desa)
+    var administrasiDesa = L.tileLayer.wms("http://localhost:8080/geoserver/PGWEB_10_3/wms", {
+      layers: "PGWEB_10_3:ADMINISTRASIDESA_AR_25K",
+      format: "image/png",
+      transparent: true,
+      version: "1.1.1",
+      attribution: "Batas Administrasi Desa",
+      tiled: false,
+    }).addTo(map);
+
+    // Tambahkan layer WMS dari Geoserver (Jalan Layer)
+    var jalanLayer = L.tileLayer.wms("http://localhost:8080/geoserver/jalan_pati/wms", {
+      layers: "jalan_pati:JALAN_LN_25K",
+      format: "image/png",
+      transparent: true,
+      version: "1.1.1",
+      attribution: "Jalan Layer",
+      tiled: false,
+    }).addTo(map);
+
+    // URL GetLegendGraphic untuk Batas Administrasi Desa
+    var legendUrlAdmin = "http://localhost:8080/geoserver/PGWEB_10_3/wms?request=GetLegendGraphic&version=1.1.1&format=image/png&layer=PGWEB_10_3:ADMINISTRASIDESA_AR_25K&_t=" + Date.now();
+    var legendImageAdmin = document.getElementById("legendImageAdmin");
+    legendImageAdmin.src = legendUrlAdmin;
+
+    // URL GetLegendGraphic untuk Jalan Layer
+    var legendUrlJalan = "http://localhost:8080/geoserver/jalan_pati/wms?request=GetLegendGraphic&version=1.1.1&format=image/png&layer=jalan_pati:JALAN_LN_25K&_t=" + Date.now();
+    var legendImageJalan = document.getElementById("legendImageJalan");
+    legendImageJalan.src = legendUrlJalan;
+
+    // Layer control
+    var baseMaps = {
+      "OpenStreetMap": osm,
+    };
+
+    var overlayMaps = {
+      "Batas Administrasi Desa": administrasiDesa,
+      "Jalan": jalanLayer,
+    };
+
+    L.control.layers(baseMaps, overlayMaps, { collapsed: false }).addTo(map);
+
+    // GeoJSON Search Control
+    var searchControl = new L.Control.Search({
+      layer: administrasiDesa,
+      propertyName: 'DESA_KELUR',
+      marker: false,
+      moveToLocation: function (latlng, title, map) {
+        var zoom = map.getBoundsZoom(latlng.layer.getBounds());
+        map.setView(latlng, zoom);
+      }
+    });
+    map.addControl(searchControl);
+
+    // Modal functionality when clicking on features
+    administrasiDesa.on('click', function (e) {
+      var popupContent = "Feature Info: " + e.latlng;
+      document.getElementById('featureModalBody').innerHTML = popupContent;
+      $('#featureModal').modal('show');
+    });
+
+    // Control Extent
+    L.control.defaultExtent().addTo(map);
+  </script>
+</body>
+
+</html>
